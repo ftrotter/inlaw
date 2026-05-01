@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inlaw"
+version = "0.1.0"
+description = "A lightweight wrapper around Great Expectations for database validation testing"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Fred Trotter", email = "ftrotter@gmail.com"}
+]
+keywords = ["testing", "database", "validation", "great-expectations", "data-quality"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Database",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "great-expectations>=0.18.0",
+    "sqlalchemy>=2.0.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.scripts]
+inlaw = "src.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ftrotter/inlaw"
+Repository = "https://github.com/ftrotter/inlaw"
+Issues = "https://github.com/ftrotter/inlaw/issues"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-data]
+src = ["*.py"]
