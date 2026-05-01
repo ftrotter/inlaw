@@ -15,7 +15,20 @@ InLaw allows you to write simple database validation tests as Python classes and
 ## Installation
 
 ```bash
+# Basic installation
 pip install inlaw
+
+# With DuckDB support
+pip install inlaw[duckdb]
+
+# With PostgreSQL support
+pip install inlaw[postgres]
+
+# With MySQL support
+pip install inlaw[mysql]
+
+# With all database drivers
+pip install inlaw[duckdb,postgres,mysql]
 ```
 
 For local development:
@@ -107,15 +120,76 @@ InLaw uses environment variables with the `INLAW_` prefix for database configura
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `INLAW_URL` | * | Complete SQLAlchemy connection URL | `postgresql://user:pass@host:5432/db` |
-| `INLAW_DIALECT` | ** | Database dialect | `postgresql`, `mysql`, `sqlite` |
+| `INLAW_DIALECT` | ** | Database dialect | `postgresql`, `mysql`, `sqlite`, `duckdb` |
 | `INLAW_DRIVER` | No | Database driver | `psycopg2`, `pymysql` |
 | `INLAW_USER` | ** | Database username | `myuser` |
 | `INLAW_PASSWORD` | No | Database password | `secretpass` |
 | `INLAW_HOST` | ** | Database host | `localhost`, `db.example.com` |
 | `INLAW_PORT` | No | Database port | `5432`, `3306` |
-| `INLAW_DATABASE` | ** | Database name | `mydb` |
+| `INLAW_DATABASE` | ** | Database name/path | `mydb`, `/path/to/db.duckdb` |
 
 \* Either `INLAW_URL` OR the individual components (\*\*) are required.
+
+### Database-Specific Configuration
+
+#### DuckDB
+
+DuckDB can be used with either an in-memory database or a file-based database:
+
+```bash
+# File-based DuckDB
+INLAW_DIALECT=duckdb
+INLAW_DATABASE=/path/to/mydata.duckdb
+
+# Or using URL format
+INLAW_URL=duckdb:///path/to/mydata.duckdb
+
+# In-memory DuckDB (for testing)
+INLAW_URL=duckdb:///:memory:
+```
+
+#### PostgreSQL
+
+```bash
+# Using URL
+INLAW_URL=postgresql://user:password@localhost:5432/mydb
+
+# Or individual components
+INLAW_DIALECT=postgresql
+INLAW_DRIVER=psycopg2
+INLAW_USER=myuser
+INLAW_PASSWORD=mypassword
+INLAW_HOST=localhost
+INLAW_PORT=5432
+INLAW_DATABASE=mydb
+```
+
+#### MySQL
+
+```bash
+# Using URL
+INLAW_URL=mysql+pymysql://user:password@localhost:3306/mydb
+
+# Or individual components
+INLAW_DIALECT=mysql
+INLAW_DRIVER=pymysql
+INLAW_USER=myuser
+INLAW_PASSWORD=mypassword
+INLAW_HOST=localhost
+INLAW_PORT=3306
+INLAW_DATABASE=mydb
+```
+
+#### SQLite
+
+```bash
+# Using URL
+INLAW_URL=sqlite:////absolute/path/to/database.db
+
+# Or individual components
+INLAW_DIALECT=sqlite
+INLAW_DATABASE=/absolute/path/to/database.db
+```
 
 ## .env File Discovery
 
