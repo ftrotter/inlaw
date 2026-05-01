@@ -52,8 +52,7 @@ If you encounter Pydantic-related errors on Python 3.14, please downgrade to Pyt
 Create a file with your InLaw test classes (e.g., `my_tests.py`):
 
 ```python
-from src.inlaw import InLaw
-from src.dbtable import DBTable
+from inlaw import InLaw, DBTable
 
 class TestUsersTableExists(InLaw):
     title = "Verify users table exists and has records"
@@ -210,7 +209,7 @@ Every InLaw test is a class that:
 3. Implements a `run(engine, config)` static method
 
 ```python
-from src.inlaw import InLaw
+from inlaw import InLaw
 
 class MyTest(InLaw):
     title = "My Test Description"
@@ -227,7 +226,7 @@ class MyTest(InLaw):
 The `DBTable` class provides flexible table identification across different SQL dialects:
 
 ```python
-from src.dbtable import DBTable
+from inlaw import DBTable
 
 # PostgreSQL style (database + schema + table)
 table = DBTable(database='mydb', schema='public', table='users')
@@ -288,7 +287,7 @@ You can also use InLaw programmatically in your Python code:
 
 ```python
 from sqlalchemy import create_engine
-from src.inlaw import InLaw
+from inlaw import InLaw
 
 # Create engine
 engine = create_engine('postgresql://user:pass@localhost/mydb')
