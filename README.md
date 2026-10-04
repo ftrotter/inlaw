@@ -43,7 +43,9 @@ pip install -e .
 
 ### Python Version Compatibility
 
-**Important**: While this package supports Python 3.10+, Great Expectations (a core dependency) currently has runtime compatibility issues with Python 3.14 due to Pydantic v1 limitations. For best results, use Python 3.10, 3.11, 3.12, or 3.13.
+InLaw supports Python 3.10 through 3.13. Python 3.14 is currently excluded
+because Great Expectations has runtime compatibility issues with its Pydantic
+v1 compatibility layer.
 
 If you encounter Pydantic-related errors on Python 3.14, please downgrade to Python 3.13 or earlier.
 
@@ -60,7 +62,7 @@ class TestUsersTableExists(InLaw):
     title = "Verify users table exists and has records"
     
     @staticmethod
-    def run(engine, config=None):
+    def run(engine, settings=None):
         # Create a DBTable reference
         users_table = DBTable(database='mydb', schema='public', table='users')
         
@@ -252,7 +254,7 @@ InLaw provides the `sql_to_gx_df()` helper to convert SQL queries into GX valida
 
 ```python
 @staticmethod
-def run(engine, config=None):
+def run(engine, settings=None):
     sql = "SELECT age, email FROM users"
     gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
     
@@ -274,7 +276,7 @@ Your `run()` method should return:
 
 ```python
 @staticmethod
-def run(engine, config=None):
+def run(engine, settings=None):
     # ... test logic ...
     
     if everything_ok:
@@ -289,22 +291,45 @@ You can also use InLaw programmatically in your Python code:
 
 ```python
 from sqlalchemy import create_engine
+from dynaconf import Dynaconf
 from inlaw import InLaw
 
 # Create engine
 engine = create_engine('postgresql://user:pass@localhost/mydb')
+settings = Dynaconf(environments=False, load_dotenv=True)
 
 # Run all tests in a directory
 results = InLaw.run_all(
     engine=engine,
     inlaw_dir='/path/to/tests',
-    config={'threshold': 100}  # Optional config passed to tests
+    settings=settings  # Optional Dynaconf settings passed to tests
 )
 
 print(f"Passed: {results['passed']}")
 print(f"Failed: {results['failed']}")
 print(f"Errors: {results['errors']}")
 ```
+
+`config=` remains available as a deprecated compatibility alias for InLaw
+0.1.0 callers. New checks should accept `settings`.
+
+### Great Expectations 1.x
+
+`InLaw.sql_to_gx_df()` uses an ephemeral Great Expectations context and
+returns a compatibility adapter around a GX 1.x batch. The adapter supports:
+
+- `expect_column_values_to_be_between`
+- `expect_column_sum_to_be_between`
+- `expect_column_values_to_be_unique`
+- `expect_column_values_to_not_be_null`
+- `expect_column_values_to_be_null`
+- `expect_column_values_to_be_in_set`
+- `expect_column_values_to_match_regex`
+- `expect_table_row_count_to_equal`
+- `expect_table_row_count_to_be_between`
+
+Unsupported expectation names raise an `AttributeError` that lists the
+available methods.
 
 ## CLI Options
 

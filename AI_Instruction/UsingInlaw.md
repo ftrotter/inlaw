@@ -19,8 +19,8 @@ import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
-from inlaw import InLaw
-from dbtable import DBTable
+from dynaconf import Dynaconf
+from inlaw import DBTable, InLaw
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,32 +29,28 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost:5432/dbname')
 engine = create_engine(DATABASE_URL)
 
-# Load configuration from environment (optional, but useful for table references)
-config = {
-    'MY_SCHEMA': os.getenv('MY_SCHEMA', 'public'),
-    'MY_TABLE': os.getenv('MY_TABLE', 'my_table'),
-}
+# Load settings from environment (optional, but useful for table references)
+settings = Dynaconf(environments=False, load_dotenv=True)
 
 # Run all InLaw classes defined in this file
 # InLaw.run_all will auto-detect classes in the current file
 if __name__ == "__main__":
-    InLaw.run_all(engine=engine, config=config)
+    InLaw.run_all(engine=engine, settings=settings)
 
 
 class ValidateRowCount(InLaw):
     title = "Table should have expected number of rows"
     
     @staticmethod
-    def run(engine, config: dict | None = None):
+    def run(engine, settings: Dynaconf | None = None):
         """
         Runs a Great Expectations test to validate the integrity of the data.
         """
-        if config is None:
-            print("Error: This test requires config. It needs to know the DB Tables")
-            exit()
+        if settings is None:
+            return "ValidateRowCount Error: settings are required"
 
         # Reference your database table
-        my_DBTable = DBTable(schema=config['MY_SCHEMA'], table=config['MY_TABLE'])
+        my_DBTable = DBTable(schema=settings.MY_SCHEMA, table=settings.MY_TABLE)
 
         sql = f"SELECT COUNT(*) as row_count FROM {my_DBTable}"
         gx_df = InLaw.to_gx_dataframe(sql, engine)
@@ -104,7 +100,7 @@ python my_validation_tests.py
 ## Key InLaw Pattern
 
 1. **Write SQL that returns data to validate** (not violations)
-2. **Use `InLaw.to_gx_dataframe(sql, engine)`** to convert to GX DataFrame
+2. **Use `InLaw.sql_to_gx_df(sql=sql, engine=engine)`** to query data
 3. **Use Great Expectations methods** like `expect_column_values_to_be_between()`, `expect_column_values_to_be_unique()`, etc.
 4. **Check `result.success`** and return True/False with descriptive error messages
 
@@ -116,6 +112,7 @@ python my_validation_tests.py
 - `expect_column_values_to_be_null(column)` - Null validation
 - `expect_table_row_count_to_equal(value)` - Exact row count
 - `expect_table_row_count_to_be_between(min_value, max_value)` - Row count range
+- `expect_column_values_to_be_in_set(column, value_set)` - Set membership validation
 - `expect_column_sum_to_be_between(column, min_value, max_value)` - Sum validation
 - `expect_column_values_to_match_regex(column, regex)` - Pattern matching
 
@@ -123,7 +120,7 @@ python my_validation_tests.py
 
 - Use `expect_column_values_to_be_between(column, min_value=0, max_value=0)` to test for exactly 0
 - Use `expect_table_row_count_to_equal(value)` for exact row counts
-- See `../npd_plainerflow/docs/InLaw_README.md` for complete list of available expectations
+- Unsupported expectation names raise an error listing the mapped expectations
 
 
 ## Advanced Example: Suite of Related Tests

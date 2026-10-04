@@ -6,11 +6,11 @@ import sys
 import os
 import argparse
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional
 from dotenv import load_dotenv
+from dynaconf import Dynaconf
 import sqlalchemy
-from src.inlaw import InLaw
-from src.dbtable import DBTable
+from .inlaw import InLaw
 
 
 class InLawCLI:
@@ -155,7 +155,7 @@ class InLawCLI:
             # Test connection
             with engine.connect() as conn:
                 pass
-            print(f"Successfully connected to database")
+            print("Successfully connected to database")
             return engine
         except Exception as e:
             print(f"Error: Failed to connect to database: {e}", file=sys.stderr)
@@ -233,10 +233,11 @@ Examples:
 
         # Run InLaw tests
         try:
+            settings = Dynaconf(environments=False, load_dotenv=True)
             results = InLaw.run_all(
                 engine=engine,
                 inlaw_dir=test_directory,
-                config=None
+                settings=settings,
             )
 
             # Check results
